@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hindalco Day 1 Flow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --bg:#f2f5f4;
+    --surface:#ffffff;
+    --surface-2:#eaf0ef;
+    --ink:#101c26;
+    --muted:#5b6c74;
+    --line:#dde6e5;
+    --navy:#0e2a3d;
+    --navy-ink:#0e2a3d;
+    --teal:#178f80;
+    --teal-soft:#e3f3ef;
+    --amber:#c97a1f;
+    --amber-soft:#fbeddc;
+    --shadow:0 10px 30px -18px rgba(14,42,61,.35);
+    font-size:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0b1520;
+      --surface:#111f2b;
+      --surface-2:#152736;
+      --ink:#eaf1f2;
+      --muted:#93a8ae;
+      --line:#233241;
+      --navy-ink:#8fc4e0;
+      --teal:#3fc2ac;
+      --teal-soft:#12332e;
+      --amber:#e3a24f;
+      --amber-soft:#3a2c17;
+      --shadow:0 10px 30px -18px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0b1520;
+    --surface:#111f2b;
+    --surface-2:#152736;
+    --ink:#eaf1f2;
+    --muted:#93a8ae;
+    --line:#233241;
+    --navy-ink:#8fc4e0;
+    --teal:#3fc2ac;
+    --teal-soft:#12332e;
+    --amber:#e3a24f;
+    --amber-soft:#3a2c17;
+    --shadow:0 10px 30px -18px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",-apple-system,Segoe UI,sans-serif;
+    padding-inline:16px;
+    padding-block:20px 60px;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:"Fraunces","IBM Plex Sans",serif;
+    font-weight:600;
+    letter-spacing:-.01em;
+    text-wrap:balance;
+    margin:0;
+  }
+  .mono{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;}
+  .wrap{max-width:1080px;margin-inline:auto;}
+  button{font:inherit;color:inherit;}
+  .icon{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+
+  /* ---------- header ---------- */
+  header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:22px;}
+  .eyebrow{font-size:13.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  header.top h1{font-size:clamp(26px,4vw,36px);color:var(--navy-ink);}
+  .status-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12px;padding:6px 12px;border-radius:100px;
+    background:var(--teal-soft);color:var(--teal);border:1px solid var(--teal);
+    white-space:nowrap;
+  }
+
+  /* ---------- journey strip (hero) ---------- */
+  .journey{
+    display:grid;grid-template-columns:repeat(6,1fr);gap:10px;
+    margin-bottom:26px;
+  }
+  @media (max-width:760px){ .journey{grid-template-columns:repeat(3,1fr);} }
+  .stage{
+    perspective:1200px;height:108px;cursor:pointer;
+  }
+  .stage-inner{
+    position:relative;width:100%;height:100%;
+    transition:transform .5s cubic-bezier(.2,.8,.2,1);
+    transform-style:preserve-3d;
+  }
+  .stage.flipped .stage-inner{transform:rotateY(180deg);}
+  .stage-face{
+    position:absolute;inset:0;border-radius:14px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:4px;padding:8px;text-align:center;backface-visibility:hidden;
+    border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);
+  }
+  .stage-face.back{
+    transform:rotateY(180deg);
+    background:var(--navy);color:#f4f8f8;border-color:var(--navy);
+    font-size:12.5px;line-height:1.35;
+  }
+  .stage-face .em{font-size:22px;}
+  .stage-face .lbl{font-size:14px;font-weight:600;}
+  .stage-face .num{position:absolute;top:8px;left:10px;font-size:11.5px;color:var(--muted);}
+
+  /* ---------- tabs ---------- */
+  nav.tabs{
+    display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:20px;
+    scrollbar-width:thin;
+  }
+  nav.tabs button{
+    flex-shrink:0;padding:10px 16px;border-radius:10px;border:1px solid var(--line);
+    background:var(--surface);color:var(--muted);font-size:13.5px;font-weight:600;
+    cursor:pointer;transition:.15s;white-space:nowrap;
+  }
+  nav.tabs button.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  nav.tabs button:hover:not(.active){border-color:var(--teal);color:var(--teal);}
+
+  .panel{display:none;animation:fade .35s ease;}
+  .panel.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .panel-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+  .panel-head h2{font-size:24px;color:var(--navy-ink);}
+  .time-chip{font-size:14.5px;padding:4px 10px;border-radius:100px;background:var(--surface-2);color:var(--muted);}
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;box-shadow:var(--shadow);
+  }
+  .grid{display:grid;gap:14px;}
+  .g2{grid-template-columns:1fr 1fr;}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:760px){ .g2,.g3,.g4{grid-template-columns:1fr;} }
+
+  /* ---------- day map (timeline) ---------- */
+  .timeline{display:flex;flex-direction:column;gap:0;border-left:2px solid var(--line);margin-left:8px;}
+  .t-item{
+    position:relative;padding:12px 0 12px 22px;cursor:pointer;
+  }
+  .t-item::before{
+    content:"";position:absolute;left:-6px;top:18px;width:10px;height:10px;
+    border-radius:50%;background:var(--surface);border:2px solid var(--teal);
+  }
+  .t-item.quality::before{border-color:var(--amber);}
+  .t-item.break::before{border-color:var(--muted);background:var(--muted);}
+  .t-item:hover .t-title{color:var(--teal);}
+  .t-time{font-size:12px;color:var(--muted);}
+  .t-title{font-weight:600;font-size:15px;margin-top:2px;}
+  .t-sub{font-size:15px;color:var(--muted);margin-top:2px;}
+
+  /* ---------- flip cards ---------- */
+  .flip{perspective:1400px;height:150px;cursor:pointer;}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d;}
+  .flip.flipped .flip-inner{transform:rotateY(180deg);}
+  .face{
+    position:absolute;inset:0;border-radius:14px;border:1px solid var(--line);
+    padding:14px 16px;backface-visibility:hidden;background:var(--surface);
+    display:flex;flex-direction:column;box-shadow:var(--shadow);
+  }
+  .face.back{transform:rotateY(180deg);background:var(--surface-2);}
+  .face .top-row{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .face .step-no{font-size:11px;color:var(--teal);font-weight:700;}
+  .face h4{font-size:15px;font-weight:700;margin:8px 0 2px;font-family:"IBM Plex Sans";}
+  .face .time{font-size:11.5px;color:var(--muted);}
+  .face p{font-size:15px;line-height:1.4;color:var(--muted);margin:6px 0 0;}
+  .flip-hint{margin-top:auto;font-size:12px;color:var(--teal);opacity:.8;}
+  .face.back p{color:var(--ink);}
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .chip{font-size:14px;padding:5px 11px;border-radius:100px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);}
+  .chip.role{background:var(--teal-soft);color:var(--teal);border-color:transparent;}
+
+  .flow-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px;font-size:12px;}
+  .flow-strip .node{padding:6px 10px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font-weight:600;white-space:nowrap;}
+  .flow-strip .arrow{color:var(--muted);}
+
+  .story-card{padding:22px;}
+  .story-card .badge{font-size:11px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
+  .story-card .lead{font-size:17px;font-family:"Fraunces";margin-top:10px;line-height:1.4;}
+  .story-flip{margin-top:14px;}
+
+  .charter{
+    border-radius:16px;border:1px solid var(--line);background:
+      linear-gradient(180deg,var(--surface) 0%, var(--surface) 100%);
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .charter-head{background:var(--navy);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  .charter-body{padding:18px 20px;display:grid;gap:12px;}
+  .field{display:grid;grid-template-columns:170px 1fr;gap:10px;align-items:start;border-bottom:1px dashed var(--line);padding-bottom:10px;}
+  @media (max-width:600px){.field{grid-template-columns:1fr;}}
+  .field .k{font-size:13.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;}
+  .field .v{font-size:16px;}
+  .track-pill{display:inline-flex;gap:6px;}
+  .track-pill span{padding:5px 12px;border-radius:100px;font-size:12.5px;font-weight:600;border:1.5px solid var(--line);color:var(--muted);cursor:pointer;transition:.15s;}
+  .track-pill span.on.process{background:var(--teal-soft);color:var(--teal);border-color:var(--teal);}
+  .track-pill span.on.quality{background:var(--amber-soft);color:var(--amber);border-color:var(--amber);}
+
+  .gate{
+    border:1.5px dashed var(--line);border-radius:14px;padding:16px;margin-top:14px;cursor:pointer;
+    transition:.15s;
+  }
+  .gate:hover{border-color:var(--teal);}
+  .gate .q{font-weight:700;font-size:14.5px;}
+  .gate .a{display:none;margin-top:10px;font-size:13.5px;color:var(--muted);}
+  .gate.open .a{display:block;}
+  .gate .a b{color:var(--ink);}
+
+  /* ---------- tree diagram ---------- */
+  .tree{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:16px;}
+  .tree .node{padding:9px 16px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);font-size:13px;font-weight:600;text-align:center;}
+  .tree .connector{width:2px;height:16px;background:var(--line);}
+  .tree .branch{display:flex;gap:28px;}
+  .tree .lane{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .tree .lane.process .node.solid{background:var(--teal-soft);color:var(--teal);border-color:var(--teal);}
+  .tree .lane.quality .node.solid{background:var(--amber-soft);color:var(--amber);border-color:var(--amber);}
+  @media (max-width:600px){.tree .branch{gap:14px;} .tree .node{font-size:11.5px;padding:8px 10px;}}
+
+  .stat-band{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;}
+  .stat{flex:1;min-width:140px;background:var(--surface-2);border-radius:12px;padding:14px 16px;}
+  .stat .n{font-family:"IBM Plex Mono";font-size:26px;font-weight:600;color:var(--teal);}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  .flag{display:flex;gap:10px;align-items:flex-start;background:var(--amber-soft);border:1px solid var(--amber);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:13px;color:var(--ink);}
+  .flag .icon{color:var(--amber);margin-top:2px;}
+
+  .note{font-size:15px;color:var(--muted);margin-top:10px;}
+  .section-gap{margin-top:22px;}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Hindalco AI Engineer Program · Kolkata · 4-day physical</div>
+      <h1>Day 1 — Trust to Charter</h1>
+    </div>
+    <span class="status-tag">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+      Review artifact · Training-portal 
+    </span>
+  </header>
+
+  <!-- JOURNEY STRIP -->
+  <div class="journey" id="journey"></div>
+
+  <!-- TABS -->
+  <nav class="tabs" id="tabs"></nav>
+
+  <div id="panels"></div>
+</div>
+
+<script>
+const TRACK = { process:"Process / Forecasting", quality:"Quality / Image" };
+
+const STAGES = [
+  {em:"💡",lbl:"Gut Feel",back:"Teams pick a use case on instinct — before seeing any data."},
+  {em:"📊",lbl:"Evidence",back:"Real KPI data checks the morning's hunch: keep, modify, or reject it."},
+  {em:"🔍",lbl:"Root Cause",back:"Fishbone → 5 Whys on the team's own KPI problem."},
+  {em:"🤖",lbl:"ML Framing",back:"Root cause becomes a precise ML problem: target, features, horizon, metric."},
+  {em:"🎯",lbl:"Team Contract",back:"One-page Capstone Charter — the contract carried into Days 2–4."},
+  {em:"🔀",lbl:"Track Split",back:"The charter's problem type names the Day-2 track — Forecasting or Defect Classification."},
+];
+
+const TABS = [
+  {id:"map", label:"Day Map"},
+  {id:"trust", label:"Intro & Mission"},
+  {id:"story", label:"The Energy Problem"},
+  {id:"morning", label:"Morning Teamwork"},
+  {id:"afternoon", label:"Afternoon Formalization"},
+  {id:"charter", label:"Capstone Charter"},
+  {id:"bridge", label:"Bridge to Day 2"},
+];
+
+const TIMELINE = [
+  {t:"09:00–10:00", title:"Intro + Mission Setting", sub:"Intro, journey visual, capstone briefing", tab:"trust", track:"process"},
+  {t:"10:00–10:20", title:"The Energy Problem", sub:"Shared story — whole cohort, no team work yet", tab:"story", track:"process"},
+  {t:"10:20–11:00", title:"Ex 1 — Diagnose", sub:"Instinct-level problem hypothesis", tab:"morning", track:"process"},
+  {t:"11:00–11:15", title:"Tea Break", sub:"", tab:"morning", track:"break"},
+  {t:"11:15–13:00", title:"Ex 2–4 — Opportunity, Prioritize, Frame ML Problem", sub:"Find the AI use case → pick one → draft the ML problem", tab:"morning", track:"process"},
+  {t:"13:00–14:00", title:"Lunch", sub:"", tab:"morning", track:"break"},
+  {t:"14:00–14:15", title:"Re-entry", sub:"“Would you still choose it if the data said otherwise?”", tab:"afternoon", track:"process"},
+  {t:"14:15–15:00", title:"KPI Benchmarking", sub:"Evidence check against the morning's hunch", tab:"afternoon", track:"process"},
+  {t:"15:00–16:00", title:"Root-Cause Framing", sub:"Fishbone → 5 Whys", tab:"afternoon", track:"quality"},
+  {t:"16:00–16:15", title:"Tea Break", sub:"", tab:"afternoon", track:"break"},
+  {t:"16:15–17:00", title:"Root Cause → ML Problem", sub:"Second, evidence-informed pass at the ML framing", tab:"afternoon", track:"quality"},
+  {t:"17:00–17:45", title:"Defend Your ML Problem", sub:"3 min pitch + one challenge question per team", tab:"afternoon", track:"quality"},
+  {t:"17:45–18:00", title:"Finalize Capstone Charter", sub:"Includes the Day-2 track decision", tab:"charter", track:"quality"},
+];
+
+const EXERCISES = [
+  {no:"Ex1", title:"Diagnose", time:"10:20–11:00", out:"An instinct-level problem hypothesis — what's happening, why, what to investigate."},
+  {no:"Ex2", title:"Find the AI Opportunity", time:"11:15–11:55", out:"Three candidate AI/ML use cases for the team's problem."},
+  {no:"Ex3", title:"Prioritize", time:"11:55–12:25", out:"Score on Business Impact × Data Availability × Feasibility. Pick ONE. Gut-feel, on purpose."},
+  {no:"Ex4", title:"Frame the ML Problem", time:"12:25–13:00", out:"DRAFT Team ML Problem Statement — Business Problem → ML Problem → Target → Data → Metric."},
+];
+
+const AFTERNOON = [
+  {no:"1", title:"Re-entry", time:"14:00–14:15", out:"Real benchmark data shown, no lecture — sets up the KPI check."},
+  {no:"2", title:"KPI Benchmarking", time:"14:15–15:00", out:"Trend, gaps, KPI relationships. Does the data support this morning's pick — keep, modify, reject?"},
+  {no:"3", title:"Root-Cause Framing", time:"15:00–16:00", out:"Fishbone → 5 Whys on the team's own KPI problem. New tools, applied to this morning's problem."},
+  {no:"4", title:"Root Cause → ML Problem", time:"16:15–17:00", out:"Regression / Classification / Forecasting / Anomaly. Target + Features + Horizon + Metric — v2, not a repeat."},
+  {no:"5", title:"Defend Your ML Problem", time:"17:00–17:45", out:"3 min per team + one challenge question. Facilitator plays AI Engineering review board."},
+];
+
+const JOURNEY_STAGES = [
+  {word:"DEFINE", back:"Frame the business problem in AI/ML terms."},
+  {word:"BUILD", back:"Train and validate a working model."},
+  {word:"PRODUCTIONIZE", back:"Pipeline, package, deploy, monitor it on Azure ML."},
+  {word:"ENGINEER", back:"Harden it with software-engineering & AI-assisted dev practice."},
+];
+
+function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
+
+// ---- journey strip ----
+const journeyRoot = document.getElementById("journey");
+STAGES.forEach((s,i)=>{
+  const card = el(`
+    <div class="stage" data-i="${i}">
+      <div class="stage-inner">
+        <div class="stage-face front">
+          <span class="num">${i+1}/6</span>
+          <span class="em">${s.em}</span>
+          <span class="lbl">${s.lbl}</span>
+        </div>
+        <div class="stage-face back">${s.back}</div>
+      </div>
+    </div>`);
+  card.addEventListener("click", ()=> card.classList.toggle("flipped"));
+  journeyRoot.appendChild(card);
+});
+
+// ---- tabs ----
+const tabsRoot = document.getElementById("tabs");
+const panelsRoot = document.getElementById("panels");
+TABS.forEach(t=>{
+  const b = el(`<button data-id="${t.id}">${t.label}</button>`);
+  b.addEventListener("click", ()=> setActive(t.id));
+  tabsRoot.appendChild(b);
+});
+
+function setActive(id){
+  document.querySelectorAll("#tabs button").forEach(b=> b.classList.toggle("active", b.dataset.id===id));
+  document.querySelectorAll(".panel").forEach(p=> p.classList.toggle("active", p.id==="panel-"+id));
+  try{ localStorage.setItem("d1-tab", id); }catch(e){}
+}
+
+function makeFlipGrid(items, cols){
+  const wrap = document.createElement("div");
+  wrap.className = "grid " + cols;
+  items.forEach(it=>{
+    const card = el(`
+      <div class="flip">
+        <div class="flip-inner">
+          <div class="face front">
+            <div class="top-row"><span class="step-no">${it.no}</span><span class="time mono">${it.time}</span></div>
+            <h4>${it.title}</h4>
+            <span class="flip-hint">click for output ↻</span>
+          </div>
+          <div class="face back">
+            <span class="step-no">Output</span>
+            <p>${it.out}</p>
+          </div>
+        </div>
+      </div>`);
+    card.addEventListener("click", ()=> card.classList.toggle("flipped"));
+    wrap.appendChild(card);
+  });
+  return wrap.outerHTML;
+}
+
+// ---- panel: Day Map ----
+panelsRoot.appendChild(el(`
+  <section class="panel" id="panel-map">
+    <div class="panel-head"><h2>The full day, at a glance</h2><span class="time-chip">09:00 – 18:00</span></div>
+    <div class="card">
+      <div class="timeline" id="timeline"></div>
+      <div class="note">Dot colour previews which Day-2 track the afternoon is quietly building toward — <span style="color:var(--teal);font-weight:600">teal = process/forecasting</span>, <span style="color:var(--amber);font-weight:600">amber = quality/image</span>, <span style="color:var(--muted);font-weight:600">grey = break</span>. Click any row to open that module.</div>
+    </div>
+    <div class="card section-gap">
+      <h3 style="font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;">Materials Required</h3>
+      <div class="chip-row">
+        <span class="chip">⚠ Hindalco AI Challenge Cards</span>
+        <span class="chip">⚠ Team Working Canvas</span>
+        <span class="chip">✅ KPI Benchmark Data</span>
+        <span class="chip">⚠ Prioritization Scorecard</span>
+        <span class="chip">⚠ Capstone Charter Template</span>
+      </div>
+    </div>
+  </section>
+`));
+const tl = document.getElementById("timeline");
+TIMELINE.forEach(item=>{
+  const row = el(`
+    <div class="t-item ${item.track}" data-tab="${item.tab}">
+      <div class="t-time mono">${item.t}</div>
+      <div class="t-title">${item.title}</div>
+      ${item.sub ? `<div class="t-sub">${item.sub}</div>` : ""}
+    </div>`);
+  row.addEventListener("click", ()=> setActive(item.tab));
+  tl.appendChild(row);
+});
+
+// ---- panel: Trust & Mission ----
+panelsRoot.appendChild(el(`
+  <section class="panel" id="panel-trust">
+    <div class="panel-head"><h2>Intro + Mission Setting</h2><span class="time-chip">09:00–10:00</span></div>
+    <div class="card">
+      <p style="font-family:'Fraunces';font-size:16.5px;margin:0 0 6px;">“We’re not here just to learn AI/ML concepts — We're here to connect business problems, AI/ML, cloud, MLOps and software engineering into something deployable.”</p>
+      <p class="note" style="margin-top:0;">Practitioner framing, not academic. Followed by structured intros</p>
+      <div class="section-gap">
+        <h3 style="font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">One capability, 4 days — click each stage</h3>
+        <div class="grid g4 section-gap" id="journeyStages"></div>
+      </div>
+      <div class="section-gap">
+        <h3 style="font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Capstone briefing, in one breath</h3>
+        <div class="flow-strip" id="capstoneFlow"></div>
+      </div>
+      <div class="flag">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        <span><b>Open:</b>Pre-Assessment + CASE STUDY (MS Forms)</span>
+      </div>
+    </div>
+  </section>
+`));
+document.getElementById("journeyStages").innerHTML = JOURNEY_STAGES.map((s,i)=>`
+  <div class="flip" style="height:120px;">
+    <div class="flip-inner">
+      <div class="face front" style="align-items:center;justify-content:center;text-align:center;">
+        <span class="step-no">${i+1}</span>
+        <h4 style="margin-top:6px;">${s.word}</h4>
+      </div>
+      <div class="face back" style="justify-content:center;">
+        <p>${s.back}</p>
+      </div>
+    </div>
+  </div>`).join("");
+document.querySelectorAll("#journeyStages .flip").forEach(c=> c.addEventListener("click", ()=>c.classList.toggle("flipped")));
+
+document.getElementById("capstoneFlow").innerHTML =
+  ["KPI","Business Problem","ML/DL Solution","Pipeline","Deployment","Monitoring","Engineering","Final Solution"]
+  .map((n,i)=> (i? `<span class="arrow">→</span>`:"") + `<span class="node">${n}</span>`).join("");
+
+// ---- panel: Story ----
+panelsRoot.appendChild(el(`
+  <section class="panel" id="panel-story">
+    <div class="panel-head"><h2>The Energy Problem</h2><span class="time-chip">10:00–10:20</span></div>
+    <div class="card story-card">
+      <span class="badge">Shared narrative · whole cohort · fictional Hindalco-style plant</span>
+      <p class="lead">SEC (energy per tonne) has crept up — even though production stayed flat.</p>
+      <div class="flip story-flip" style="height:130px;">
+        <div class="flip-inner">
+          <div class="face front" style="align-items:center;justify-content:center;text-align:center;">
+            <p style="font-size:14px;">Ops says: <b>“Just reduce power.”</b><br><span class="flip-hint" style="position:static;">click to see the AI team's question ↻</span></p>
+          </div>
+          <div class="face back" style="align-items:center;justify-content:center;text-align:center;">
+            <p style="font-size:14.5px;">AI team asks instead: <b>“What's driving it — and can we predict it early enough to act?”</b></p>
+          </div>
+        </div>
+      </div>
+      <p class="note">Illustrative only — teaches the method vicariously. No team work yet; that starts right after.</p>
+    </div>
+  </section>
+`));
+document.querySelectorAll("#panel-story .flip").forEach(c=> c.addEventListener("click", ()=>c.classList.toggle("flipped")));
+
+// ---- panel: Morning Teamwork ----
+panelsRoot.appendChild(el(`
+  <section class="panel" id="panel-morning">
+    <div class="panel-head"><h2>Team Exercises 1–4 — real capstone work</h2><span class="time-chip">10:20–13:00 (tea break 11:00–11:15)</span></div>
+    <div class="card">
+      <div class="chip-row">
+        <span class="chip">5–6 teams · 4–5 people</span>
+        <span class="chip role">Business Analyst</span>
+        <span class="chip role">Data-ML Engineer</span>
+        <span class="chip role">MLOps Engineer</span>
+        <span class="chip role">Reviewer</span>
+        <span class="chip">Roles rotate each day · same teams, all 4 days</span>
+      </div>
+      <div class="note">Each team works its own, deliberately different <b>Hindalco AI Challenge Card</b> — pre-authored to lean cleanly toward one Day-2 track, so tomorrow's split is a reveal, not an open debate.</div>
+      <div class="section-gap">${makeFlipGrid(EXERCISES,"g4")}</div>
+      <div class="section-gap">
+        <h3 style="font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">The working canvas, all morning</h3>
+        <div class="flow-strip" id="canvasFlow"></div>
+      </div>
+    </div>
+  </section>
+`));
+document.querySelectorAll("#panel-morning .flip").forEach(c=> c.addEventListener("click", ()=>c.classList.toggle("flipped")));
+document.getElementById("canvasFlow").innerHTML =
+  ["Business KPI","Business Problem","Possible Drivers","Data Needed","ML Problem","Success Metric"]
+  .map((n,i)=> (i? `<span class="arrow">→</span>`:"") + `<span class="node">${n}</span>`).join("");
+
+// ---- panel: Afternoon ----
+panelsRoot.appendChild(el(`
+  <section class="panel" id="panel-afternoon">
+    <div class="panel-head"><h2>Afternoon — Use Evidence to Strengthen the Problem</h2><span class="time-chip">14:00–18:00</span></div>
+    <div class="card">
+      <p class="lead" style="font-family:'Fraunces';font-size:16px;margin:0;">Same problem the team picked this morning. Now: would you still choose it, with the evidence in front of you?</p>
+      <div class="section-gap">${makeFlipGrid(AFTERNOON,"g3")}</div>
+      <div class="chip-row section-gap">
+        <span class="chip">Prioritization rubric, reused all program:</span>
+        <span class="chip role">Business Impact</span><span class="chip">×</span>
+        <span class="chip role">Data Availability</span><span class="chip">×</span>
+        <span class="chip role">Technical Feasibility</span>
+      </div>
+    </div>
+  </section>
+`));
+document.querySelectorAll("#panel-afternoon .flip").forEach(c=> c.addEventListener("click", ()=>c.classList.toggle("flipped")));
+
+// ---- panel: Charter ----
+panelsRoot.appendChild(el(`
+  <section class="panel" id="panel-charter">
+    <div class="panel-head"><h2>Finalize the Day-1 Capstone Charter</h2><span class="time-chip">17:45–18:00</span></div>
+    <div class="charter">
+      <div class="charter-head">
+        <strong>Team Capstone Charter — Day 1</strong>
+        <span style="font-size:12px;opacity:.85;">carried into Days 2–4</span>
+      </div>
+      <div class="charter-body">
+        <div class="field"><div class="k">KPI</div><div class="v">e.g. Specific Energy Consumption (SEC)</div></div>
+        <div class="field"><div class="k">Business Problem</div><div class="v">SEC rising despite flat production</div></div>
+        <div class="field"><div class="k">Root-Cause Hypotheses</div><div class="v">From the Fishbone → 5 Whys pass</div></div>
+        <div class="field"><div class="k">ML Problem</div><div class="v">Target · Features · Horizon · Metric (v2 — evidence-informed)</div></div>
+        <div class="field"><div class="k">Data Required</div><div class="v">As scoped against real KPI benchmarking data</div></div>
+        <div class="field"><div class="k">Business Success Metric</div><div class="v">e.g. Reduce SEC by 5% within 90 days of deployment</div></div>
+        <div class="field"><div class="k">Model Success Metric</div><div class="v">e.g. MAE, RMSE, Accuracy or F1 — tied to the ML problem's target</div></div>
+        <div class="field" style="border-bottom:none;">
+          <div class="k">Technical Track</div>
+          <div class="v">
+            <div class="track-pill">
+              <span class="on process" id="pillProcess">Process / Forecasting</span>
+              <span class="on quality" id="pillQuality">Quality / Image</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="gate" id="gate1">
+      <div class="q">Decision gate — click to reveal how the track gets picked ↻</div>
+      <div class="a">Is the problem mainly <b>PROCESS behaviour over time</b>? → <b>Forecasting Track</b>.<br>Is it mainly <b>PRODUCT / SURFACE QUALITY images</b>? → <b>Defect Classification Track</b>.<br><br>This works as a clean reveal — not an open fork — because each team's Challenge Card was already written to lean one way.</div>
+    </div>
+  </section>
+`));
+document.getElementById("gate1").addEventListener("click", (e)=> e.currentTarget.classList.toggle("open"));
+
+// ---- panel: Bridge ----
+panelsRoot.appendChild(el(`
+  <section class="panel" id="panel-bridge">
+    <div class="panel-head"><h2>Bridge to Day 2</h2><span class="time-chip">opens Day 2</span></div>
+    <div class="card">
+      <p class="lead" style="font-family:'Fraunces';font-size:16px;margin:0 0 4px;">“Yesterday you identified a problem. Today you build the first working AI solution for it.”</p>
+      <p class="note" style="margin-top:0;">Participants are never told they're choosing “CNN vs. LSTM” — they chose a business problem, and the problem chose the track.</p>
+      <div class="tree">
+        <div class="node">Hindalco Business KPI</div>
+        <div class="connector"></div>
+        <div class="node">Day 1 Problem Framing</div>
+        <div class="connector"></div>
+        <div class="branch">
+          <div class="lane process">
+            <div class="node solid">Process Problem</div>
+            <div class="connector"></div>
+            <div class="node">Time-series data</div>
+            <div class="connector"></div>
+            <div class="node solid">Forecasting</div>
+          </div>
+          <div class="lane quality">
+            <div class="node solid">Quality Problem</div>
+            <div class="connector"></div>
+            <div class="node">Image data</div>
+            <div class="connector"></div>
+            <div class="node solid">CNN / Transfer Learning</div>
+          </div>
+        </div>
+        <div class="connector"></div>
+        <div class="node">MLOps / Azure ML</div>
+        <div class="connector"></div>
+        <div class="node">Engineering / CI-CD</div>
+        <div class="connector"></div>
+        <div class="node" style="background:var(--navy);color:#fff;border-color:var(--navy);">Final Capstone</div>
+      </div>
+      <div class="stat-band">
+        <div class="stat"><div class="n">2h</div><div class="l">per team's Day-2 lab (was 4h combined — split frees time, doesn't cost it)</div></div>
+        <div class="stat"><div class="n">JIT</div><div class="l">theory taught just-in-time, per track — not a generic DL course upfront</div></div>
+      </div>
+      <div class="flag">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        <span><b>Flagged for Day 2 design:</b> two track-specific mini-lessons, same trainer, same window — staggering, self-paced pre-work, or a circulating-facilitator pattern all still open.</span>
+      </div>
+    </div>
+  </section>
+`));
+
+// activate default
+let start = "map";
+try{ const saved = localStorage.getItem("d1-tab"); if(saved) start = saved; }catch(e){}
+setActive(start);
+</script>
+
+</body>
+</html>
