@@ -1,0 +1,14 @@
+artifact_uri: file:///content/aiengineering-anilkumar/mlruns/588958456939240051/eb2589cd65ca4e28968c0e46835a21aa/artifacts
+end_time: 1790076701365
+entry_point_name: ''
+experiment_id: '588958456939240051'
+lifecycle_stage: active
+run_id: eb2589cd65ca4e28968c0e46835a21aa
+run_name: final_dnn_v1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1790076701345
+status: 4
+tags: []
+user_id: root

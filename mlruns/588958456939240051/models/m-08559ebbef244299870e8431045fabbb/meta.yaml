@@ -1,0 +1,10 @@
+artifact_location: file:///content/aiengineering-anilkumar/mlruns/588958456939240051/models/m-08559ebbef244299870e8431045fabbb/artifacts
+creation_timestamp: 1790076701357
+experiment_id: '588958456939240051'
+last_updated_timestamp: 1790076701363
+model_id: m-08559ebbef244299870e8431045fabbb
+model_type: null
+name: model
+source_run_id: eb2589cd65ca4e28968c0e46835a21aa
+status: 3
+status_message: null
